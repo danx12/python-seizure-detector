@@ -90,5 +90,5 @@ ENV/
 .ropeproject
 
 # Personal
-*.csv
 *.pickle
+*.p
