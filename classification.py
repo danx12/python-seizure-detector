@@ -24,14 +24,17 @@ eeg_feat = readStoredData('cc_automatic.p')
 X = eeg_feat['feats']
 y = eeg_feat['labels']
 
-X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=0)
+eeg_alt = readStoredData('eeg_pat22_feats.p')
+X_alt = eeg_alt['feats']
+y_alt = np.ravel(eeg_alt['labels'])
 
-#tuned_parameters = [{'kernel':['rbf'],'gamma':[1e0,1e-1,1e-2,1e-3,1e-4,1e-5],'C':[1,10,100,1000]},
-#                    {'kernel':['linear'],'C':[1,10,100,1000]}]
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=41)
 
-tuned_parameters = [{'kernel':['linear'],'C':[1,10,100]}]
+tuned_parameters = [{'kernel':['rbf'],'gamma':[2e-15,2e-10,2e-5,2e0,2e1,2e3],'C':[1,10,100,1000]}]
+
+#tuned_parameters = [{'kernel':['rnf'],'C':[1,10,100]}]
                     
-scores = ['precision','recall','roc_auc']
+scores = ['precision_macro','recall_macro','roc_auc']
 
 #f1
 
@@ -41,9 +44,9 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = GridSearchCV(SVC(class_weight='balanced',cache_size=700), tuned_parameters, cv=3,scoring='%s_macro' % score,
-                       n_jobs=-1,verbose=5)
-    clf.fit(X_train, np.ravel(y_train))
+    clf = GridSearchCV(SVC(class_weight='balanced',cache_size=700,random_state=12), tuned_parameters, cv=3,scoring='%s' % score,
+                       n_jobs=-1,verbose=4)
+    clf.fit(X_train, y_train)
 
     print("Best parameters set found on development set:")
     print()
