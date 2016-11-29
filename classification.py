@@ -28,9 +28,10 @@ eeg_alt = readStoredData('eeg_pat22_feats.p')
 X_alt = eeg_alt['feats']
 y_alt = np.ravel(eeg_alt['labels'])
 
-X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3,random_state=41)
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=41)
 
-tuned_parameters = [{'kernel':['rbf'],'gamma':[2e-15,2e-10,2e-5,2e0,2e1,2e3],'C':[1,10,100,1000]}]
+tuned_parameters = [{'kernel':['rbf'],'gamma':[2e-15,2e-12,2e-10,2e-5,2e-4,2e-3,2e-2,2e-1,2e0,2e1,2e3],
+'C':[2e-15,2e-13,2e-12,2e-10,2e-8,2e-6,2e-4,2e-3,2e-1,2e1,2e3]}]
 
 #tuned_parameters = [{'kernel':['rnf'],'C':[1,10,100]}]
                     
@@ -44,7 +45,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = GridSearchCV(SVC(class_weight='balanced',cache_size=700,random_state=12), tuned_parameters, cv=3,scoring='%s' % score,
+    clf = GridSearchCV(SVC(cache_size=700,random_state=12), tuned_parameters, cv=2,scoring='%s' % score,
                        n_jobs=-1,verbose=4)
     clf.fit(X_train, y_train)
 
