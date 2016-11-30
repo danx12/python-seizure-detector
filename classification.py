@@ -5,7 +5,7 @@ Created on Tue Nov 22 13:24:20 2016
 
 @author: danielvillarreal
 """
-
+from __future__ import print_function
 import numpy as np
 import pylab as pl
 import scipy as sp
@@ -24,6 +24,10 @@ from sklearn.svm import LinearSVC
 eeg_train = readStoredData('cc_automatic.p')
 X = eeg_train['feats']
 y = eeg_train['labels']
+X = np.where(X < 0.0,0.0,X)
+X = np.where(X > 2**31-100,2**31,X)
+
+
 
 eeg_alt = readStoredData('eeg_pat22_feats.p')
 X_alt = eeg_alt['feats']
@@ -79,3 +83,27 @@ for score in scores:
     print(confusion_matrix(y_true,y_pred))
     print()
     cf = np.ravel(clf.best_estimator_.coef_)
+    
+#%%
+cf2 = cf * (1e6)
+cf3 = cf2.astype('float32')
+def myPredictor(cf,test_set,trueLabels):
+    pred = np.zeros([test_set.shape[0],1])
+    for s in range(0,test_set.shape[0]):
+        if(np.sum(cf * test_set[s])  > 0):
+            pred[s,:] = 1
+    print(confusion_matrix(trueLabels,pred))
+
+
+myPredictor(cf3,X_test,y_test);
+print('max: ' + str(np.log2(np.max(np.abs(cf2)))))
+print('min: ' + str(np.log2(np.min(np.abs(cf2)))))
+
+#%%
+def printCoefs(cf):
+    print('float T[]= {',end="")
+    for i in range(0,len(cf)-1):
+        print(str(cf[i]) + ',',end="")
+        if(i% 5 == 0):
+            print("")
+    print(str(cf[len(cf)-1]) + '}')
