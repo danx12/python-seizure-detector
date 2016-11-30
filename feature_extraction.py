@@ -1,4 +1,4 @@
-e#!/usr/bin/env python2
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Created on Sun Nov 20 18:12:09 2016
@@ -17,6 +17,9 @@ from readStoredPickle import readStoredData,saveData
 from entropy import sample_entropy as se
 import multiprocessing as mp
 #import tabulate as tab
+from notify import *
+from sklearn.preprocessing import MinMaxScaler
+
 
 #%%
 
@@ -49,7 +52,7 @@ def linelenght(window):
     
 #allows floating point arithmetic   
 def rhytmitcity(window):
-    return np.std(window)/np.mean(window)
+    return float(np.std(window))/float(np.mean(window)) *10000
     
 
 def sampleEntropy(window):
@@ -123,7 +126,7 @@ if __name__ == '__main__':
         n = f.keys()[0]
         feats[n] = (f[n])
 #%%    
-    globalMax = 2**31 
+    globalMax = 2**10 
     featScale = {'mean':2**12-1,'energy':(2**31),'std':2049,'rms':2**12,
     'linelenght':2**24,'rhytmitcity':np.sqrt(256-1).astype('int32'),
     'powerfeatures':np.array([(2**20)-1, 1, (2**20)-1])}
@@ -146,11 +149,11 @@ if __name__ == '__main__':
     for key,value in feats.iteritems():
         order.append(key)
         if(key != 'powerfeatures'):
-            validFeats.append((value*featScale[key]).astype('int32'))
+            validFeats.append((value).astype('int32'))
         else:
-            bands = (value[:,0:15]*featScale[key][0]).astype('int32')
-            peak = (value[:,15:30]*featScale[key][1])
-            total = value[:,30:].astype('int32')*featScale[key][2]
+            bands = (value[:,0:15]).astype('int32')
+            peak = (value[:,15:30])
+            total = value[:,30:].astype('int32')
             validFeats.append(bands)
             validFeats.append(peak)
             validFeats.append(total)
@@ -171,4 +174,9 @@ if __name__ == '__main__':
 #    jobs = []
 #    manager = mp.Manager()
 #    return_dict = manager.dict()
+notify()
 
+#%%
+
+scl = MinMaxScaler((0,2**16),copy=False)
+X = scl.fit_transform(validFeats)
